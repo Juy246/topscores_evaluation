@@ -37,19 +37,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $pseudo = null;
 
-    /**
-     * @var Collection<int, Partie>
-     */
-    #[ORM\OneToMany(targetEntity: Partie::class, mappedBy: 'user')]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Partie::class)]
     private Collection $parties;
-
-    #[ORM\ManyToOne(inversedBy: 'user')]
-    private ?Stream $stream = null;
 
     public function __construct()
     {
         $this->parties = new ArrayCollection();
     }
+
+
 
     public function getId(): ?int
     {
@@ -168,7 +164,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getStream(): ?Stream
+    public function getStream(): ?Collection
     {
         return $this->stream;
     }

@@ -8,6 +8,7 @@ use App\Repository\StreamRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,7 +25,44 @@ class StreamController extends AbstractController
         }
 
         return $this->render('stream/index.html.twig', [
-            'streams' => $streamRepository->findAll(),
+            'streams' => $streamRepository->findBy(['user' => $user->getUser()]),
+        ]);
+    }
+
+    #[Route('/demain', name: 'app_stream_demain', methods: ['GET'])]
+    public function demain(StreamRepository $streamRepository): Response
+    {
+        $demain = new \DateTime('tomorrow');
+        $streams = $streamRepository->findAll();
+        $streams = array_filter($streams, function (Stream $stream) use ($demain) {
+            return $stream->getStartDate() ->format ('Y-M-D') === $demain->format('Y-m-d');
+        });
+
+        // $steamTomorrow = [];
+        // foreach ($streams as $stream) {
+        //     if ($stream->getStartDate() ->format('Y-m-d') === $demain->format('Y-m-d')) {
+        //         $streamTomorrow[] = $stream;
+        //     }
+        // }
+                
+
+        //     $stream->setStartDate($stream->getStartDate()->setTime(0, 0, 0));
+        // }
+
+        // // Find streams that start tomorrow
+        // $streamsDemain = $entityManager->getRepository(Stream::class)
+        //     ->createQueryBuilder('s')
+        //     ->join('App\Entity\Jeu', 'j')
+        //     ->where('j.id = s.jeu')
+        //     ->where('s.startDate >= :startDate')
+        //     ->andWhere('s.startDate < :endDate')
+        //     ->setParameter('startDate', $demain->setTime(0, 0, 0))
+        //     ->setParameter('endDate', $demain->setTime(23, 59, 59))
+        //     ->getQuery()
+        //     ->getResult();
+
+        return $this->render('stream/demain.html.twig', [
+            'streams' => $streamsDemain,
         ]);
     }
 
@@ -85,31 +123,6 @@ class StreamController extends AbstractController
         }
 
         return $this->redirectToRoute('app_stream_index', [], Response::HTTP_SEE_OTHER);
-    }
-
-    #[Route('/demain', name: 'app_stream_demain', methods: ['GET'])]
-    public function demain(EntityManagerInterface $entityManager): Response
-    {
-        // Get the current date and time
-        $now = new \DateTime('tomorrow');
-        // Get the date for tomorrow
-        $demain = (clone $now)->modify('+1 day');
-
-        // Find streams that start tomorrow
-        $streamsDemain = $entityManager->getRepository(Stream::class)
-            ->createQueryBuilder('s')
-            ->join('App\Entity\Jeu', 'j')
-            ->where('j.id = s.jeu')
-            ->where('s.startDate >= :startDate')
-            ->andWhere('s.startDate < :endDate')
-            ->setParameter('startDate', $demain->setTime(0, 0, 0))
-            ->setParameter('endDate', $demain->setTime(23, 59, 59))
-            ->getQuery()
-            ->getResult();
-
-        return $this->render('stream/demain.html.twig', [
-            'streams' => $streamsDemain,
-        ]);
     }
 
 }

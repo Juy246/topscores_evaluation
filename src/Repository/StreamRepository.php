@@ -16,6 +16,21 @@ class StreamRepository extends ServiceEntityRepository
         parent::__construct($registry, Stream::class);
     }
 
+    //this function gets the streams planned for tomorrow
+    public function findStreamsForTomorrow(): array
+    {
+        $demain = new \DateTime('tomorrow');
+        $demain->setTime(0, 0, 0);
+        
+        return $this->createQueryBuilder('s')
+            ->where('s.startDate >= :startDate')
+            ->andWhere('s.startDate < :endDate')
+            ->setParameter('startDate', $demain)
+            ->setParameter('endDate', (clone $demain)->modify('+1 day'))
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Stream[] Returns an array of Stream objects
 //     */
